@@ -1,20 +1,23 @@
-version: '3'
+version: '3.8'
+
 services:
   ollama:
     image: ollama/ollama
-    ports:
-      - "11435:11434"
+    container_name: ollama
     volumes:
       - ollama:/root/.ollama
+    ports:
+      - "11435:11434"
 
-  chatbot:
+  python-app:
     build: .
     depends_on:
       - ollama
     environment:
-      - BASE_URL=http://ollama:11434
-    ports:
-      - "5000:5000"
+      - OLLAMA_URL=http://ollama:11434
+    volumes:
+      - .:/app
+    command: python chatbot.py
 
 volumes:
   ollama:
