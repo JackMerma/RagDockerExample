@@ -2,9 +2,11 @@ FROM python:3.10-slim
 
 WORKDIR /app
 
-COPY requirements.txt .
+COPY . /app
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY chatbot.py chatbot.py
-COPY output.log output.log
+EXPOSE 5000
+
+#COPY chatbot.py chatbot.py
+#COPY output.log output.log

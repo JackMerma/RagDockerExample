@@ -17,6 +17,8 @@ services:
       - OLLAMA_URL=http://ollama:11434
     volumes:
       - .:/app
+    ports:
+      - "5000:5000"
     command: python chatbot.py
 
 volumes:
