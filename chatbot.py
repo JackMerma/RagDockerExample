@@ -1,12 +1,14 @@
 import os
 from flask import Flask, request, jsonify
-import chromadb
 from langchain_ollama import OllamaEmbeddings
 from langchain_chroma import Chroma
 from methods import *
 
+
+# Global variables
 app = Flask(__name__)
 OLLAMA_URL = os.getenv('OLLAMA_URL', 'http://ollama:11434')
+
 
 @app.errorhandler(Exception)
 def handle_exception(error):
@@ -67,6 +69,7 @@ def process_prompt():
     relevant_contents = get_retriever_content(relevant_docs)
 
     return jsonify({"response": relevant_contents})
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)

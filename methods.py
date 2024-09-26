@@ -1,5 +1,6 @@
 from langchain_core.documents import Document
 
+
 def get_docs(entities):
 
     documents = []
