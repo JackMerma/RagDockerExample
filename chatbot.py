@@ -1,12 +1,12 @@
 import os
 from flask import Flask, request, jsonify
-from langchain_chroma import Chroma
-from langchain_community.document_loaders import TextLoader
-from langchain.text_splitter import CharacterTextSplitter
-#from uuid import uuid4
+import ollama
+import chromadb
 from methods import *
+from llama_index.embeddings.ollama import OllamaEmbedding
 
 app = Flask(__name__)
+OLLAMA_URL = os.getenv('OLLAMA_URL', 'http://ollama:11434')
 
 @app.route('/process_prompt', methods=['POST'])
 def process_prompt():
@@ -29,36 +29,25 @@ def process_prompt():
     # Casting ranking number to int
     ranking_number = min(int(ranking_number), len(entities))
 
-    # Getting embedding model
-    em_model = OllamaEmbeddings(model="nomic-embed-text")
+    # Getting docs
+    documents = get_docs(entities)
+    client = chromadb.Client()
+    collection = client.create_collection(name="docs")
 
-    # Getting chunks
-    #docs = get_docs(entities)
-    documents = []
-    loader = TextLoader("sample_text.txt")
-    file_docs = loader.load()
-    
-    for doc in file_docs:
-        documents.append(doc)
 
-    text_splitter = CharacterTextSplitter(chunk_size=10, chunk_overlap=2)
-    docs = text_splitter.split_documents(documents)
-    #uuids = [str(uuid4()) for _ in range(len(docs))]
-
-    # Defining vector store
-    vector_store = Chroma.from_documents(
-            docs,
-            em_model,
+    # Tutorial example https://docs.llamaindex.ai/en/stable/examples/embeddings/ollama_embedding/
+    ollama_embedding = OllamaEmbedding(
+            model_name="gemma:2b",
+            base_url=OLLAMA_URL,
             )
 
-    # Retrieve relevant documents
-    retriever = vector_store.as_retriever(
-            search_type="similarity_score_threshold",
-            search_kwargs={"k":ranking_number, "score_threshold":0.1}
+    pass_embedding = ollama_embedding.get_text_embedding_batch(
+            ["This is a passage!", "This is another passage"], show_progress=True
             )
 
-    relevant_docs = retriever.invoke(query)
-    relevant_contents = [doc.page_content for doc in relevant_docs]
+    query_embedding = ollama_embedding.get_query_embedding("Where is blue?")
+
+    relevant_contents = "reponse OK"
 
     return jsonify({"retriever": relevant_contents})
 
