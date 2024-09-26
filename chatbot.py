@@ -8,8 +8,20 @@ from methods import *
 app = Flask(__name__)
 OLLAMA_URL = os.getenv('OLLAMA_URL', 'http://ollama:11434')
 
+@app.errorhandler(Exception)
+def handle_exception(error):
+    response = {
+            "error": str(error)
+            }
+    return jsonify(response), 400
+
+
 @app.route('/process_prompt', methods=['POST'])
 def process_prompt():
+
+    ##########
+    # INPUTS #
+    ##########
 
     # Getting data
     data = request.get_json()
@@ -17,25 +29,26 @@ def process_prompt():
     entities = data.get("entities", [])
     ranking_number = data.get("ranking_number", "")
 
-    if not query:
-        return jsonify({"error": "No input provided"}), 400
+    # asserting inputs
+    if not query: raise Exception("No query provided")
+    if not entities: raise Exception("No entities provided")
+    if not ranking_number: raise Exception("No ranking number provided")
 
-    if not entities:
-        return jsonify({"error": "No entities provided"}), 400
+    # Handling ranking number value
+    try: ranking_number = int(ranking_number)
+    except Exception as e: ranking_number = 1 # Default value
+    handler_ranking_numer(ranking_number, len(entities))
 
-    if not ranking_number:
-        return jsonify({"error": "No ranking number provided"}), 400
-
-    # Casting ranking number to int
-    ranking_number = min(int(ranking_number), len(entities))
-    ranking_number = 1 if ranking_number < 1 else ranking_number
+    ##############
+    # PROCESSING #
+    ##############
 
     # Getting docs
     documents = get_docs(entities)
 
     # Defining the embedding model
     embedding_model = OllamaEmbeddings(
-            model="nomic-embed-text:latest",
+            model="mxbai-embed-large",
             base_url=OLLAMA_URL
             )
 
@@ -51,19 +64,9 @@ def process_prompt():
             )
 
     relevant_docs = retriever.invoke(query)
+    relevant_contents = get_retriever_content(relevant_docs)
 
-    relevant_contents = []
-
-    for doc in relevant_docs:
-        content = doc.page_content
-        doc_id = doc.metadata["id"]
-
-        relevant_contents.append({
-            "id": doc_id,
-            "content": content
-            })
-
-    return jsonify({"retriever": relevant_contents})
+    return jsonify({"response": relevant_contents})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
