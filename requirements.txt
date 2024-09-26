@@ -1,4 +1,4 @@
 flask
-chromadb
-ollama
-llama-index-embeddings-ollama
+langchain_core
+langchain_ollama
+langchain_chroma

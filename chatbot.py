@@ -1,9 +1,9 @@
 import os
 from flask import Flask, request, jsonify
-import ollama
 import chromadb
+from langchain_ollama import OllamaEmbeddings
+from langchain_chroma import Chroma
 from methods import *
-from llama_index.embeddings.ollama import OllamaEmbedding
 
 app = Flask(__name__)
 OLLAMA_URL = os.getenv('OLLAMA_URL', 'http://ollama:11434')
@@ -28,26 +28,40 @@ def process_prompt():
 
     # Casting ranking number to int
     ranking_number = min(int(ranking_number), len(entities))
+    ranking_number = 1 if ranking_number < 1 else ranking_number
 
     # Getting docs
     documents = get_docs(entities)
-    client = chromadb.Client()
-    collection = client.create_collection(name="docs")
 
-
-    # Tutorial example https://docs.llamaindex.ai/en/stable/examples/embeddings/ollama_embedding/
-    ollama_embedding = OllamaEmbedding(
-            model_name="gemma:2b",
-            base_url=OLLAMA_URL,
+    # Defining the embedding model
+    embedding_model = OllamaEmbeddings(
+            model="nomic-embed-text:latest",
+            base_url=OLLAMA_URL
             )
 
-    pass_embedding = ollama_embedding.get_text_embedding_batch(
-            ["This is a passage!", "This is another passage"], show_progress=True
+    vector_store = Chroma.from_documents(
+            documents,
+            embedding_model
             )
 
-    query_embedding = ollama_embedding.get_query_embedding("Where is blue?")
+    # Retrieve relevant docs
+    retriever = vector_store.as_retriever(
+            search_type="similarity_score_threshold",
+            search_kwargs={"k":ranking_number, "score_threshold": 0.1}
+            )
 
-    relevant_contents = "reponse OK"
+    relevant_docs = retriever.invoke(query)
+
+    relevant_contents = []
+
+    for doc in relevant_docs:
+        content = doc.page_content
+        doc_id = doc.metadata["id"]
+
+        relevant_contents.append({
+            "id": doc_id,
+            "content": content
+            })
 
     return jsonify({"retriever": relevant_contents})
 

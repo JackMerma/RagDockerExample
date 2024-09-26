@@ -1,8 +1,14 @@
+from langchain_core.documents import Document
+
 def get_docs(entities):
 
-    docs = []
+    documents = []
 
     for entity in entities:
-        docs.append(entity.get("content", ""))
+        doc = Document(
+                page_content=entity.get("content", ""),
+                metadata={"id": entity.get("id", "")}
+                )
+        documents.append(doc)
 
-    return docs
+    return documents
