@@ -4,7 +4,7 @@ from langchain_ollama import OllamaEmbeddings
 from langchain_chroma import Chroma
 
 
-def get_docs(entities):
+def create_docs(entities):
 
     documents = []
 
@@ -17,13 +17,13 @@ def get_docs(entities):
 
     return documents
 
-def handler_ranking_numer(ranking_number, entities_len):
+def handler_ranking_number(ranking_number, entities_len):
 
     ranking_number = min(ranking_number, entities_len)
     ranking_number = 1 if ranking_number < 1 else ranking_number
 
 
-def get_retriever_content(docs):
+def retriever_content(docs):
 
     relevant_contents = []
 
@@ -39,25 +39,26 @@ def get_retriever_content(docs):
     return relevant_contents
 
 
-def get_embedding_model(ollama_url):
+def build_retriever(query, entities, ranking_number):
 
-    return OllamaEmbeddings(
+    # Getting docs
+    documents = create_docs(entities)
+
+    # Defining the embedding model
+    embedding_model =  OllamaEmbeddings(
             model=os.getenv('EMBEDDING_MODEL'),
-            base_url=ollama_url
+            base_url=os.getenv('OLLAMA_URL')
             )
 
-
-def get_vector_store(documents, embedding_model):
-
-    return Chroma.from_documents(
+    # Creating a vector store
+    vector_store =  Chroma.from_documents(
             documents,
             embedding_model
             )
 
-
-def get_retriever(vector_store, ranking_number):
-
-    return vector_store.as_retriever(
+    # Retrieve relevant docs
+    retriever =  vector_store.as_retriever(
             search_type=os.getenv('RETRIEVER_SEARCH_TYPE'),
             search_kwargs={"k":ranking_number, "score_threshold": 0.1}
             )
+    return retriever.invoke(query)

@@ -1,11 +1,10 @@
 import os
 from flask import Flask, request, jsonify
-from rag.methods import *
+from rag.methods import handler_ranking_number, build_retriever, retriever_content
 from langchain_chatbot.controller import build_response
 
 # Global variables
 app = Flask(__name__)
-OLLAMA_URL = os.getenv('OLLAMA_URL')
 
 
 """
@@ -21,10 +20,6 @@ def handle_exception(error):
 @app.route('/rag', methods=['POST'])
 def rag():
 
-    ##########
-    # INPUTS #
-    ##########
-
     # Getting data
     data = request.get_json()
     query = data.get("query", "")
@@ -39,23 +34,11 @@ def rag():
     # Handling ranking number value
     try: ranking_number = int(ranking_number)
     except Exception as e: ranking_number = 1 # Default value
-    handler_ranking_numer(ranking_number, len(entities))
-
-    ##############
-    # PROCESSING #
-    ##############
-
-    # Getting docs
-    documents = get_docs(entities)
-
-    # Defining the embedding model
-    embedding_model = get_embedding_model(OLLAMA_URL)
-    vector_store = get_vector_store(documents, embedding_model)
+    handler_ranking_number(ranking_number, len(entities))
 
     # Retrieve relevant docs
-    retriever = get_retriever(vector_store, ranking_number)
-    relevant_docs = retriever.invoke(query)
-    relevant_contents = get_retriever_content(relevant_docs)
+    relevant_docs = build_retriever(query, entities, ranking_number)
+    relevant_contents = retriever_content(relevant_docs)
 
     return jsonify({"response": relevant_contents})
 
