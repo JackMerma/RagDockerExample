@@ -1,7 +1,7 @@
 import os
 from flask import Flask, request, jsonify
 from rag.methods import *
-from templates.methods import get_model_response
+from langchain_chatbot.controller import build_response
 
 # Global variables
 app = Flask(__name__)
@@ -66,12 +66,16 @@ def langchain():
     # Getting data
     data = request.get_json()
     query = data.get("query", "")
+    topic = data.get("topic", "")
+    additional_info = data.get("additional_info", "")
 
     # Asserting inputs
     if not query: raise Exception("No query provided")
+    if not topic: raise Exception("No topic provided")
+    if not additional_info: raise Exception("No additional information provided")
 
     # Processing
-    response = get_model_response(programming_language="java", topic="arrays")
+    response = build_response(topic, additional_info, query)
 
     return jsonify({"response": response.content})
 
