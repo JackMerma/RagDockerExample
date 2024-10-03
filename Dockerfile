@@ -1,8 +1,8 @@
 FROM python:3.10-slim
 
-WORKDIR /app
+WORKDIR /chatbot
 
-COPY . /app
+COPY . /chatbot
 
 RUN pip install --no-cache-dir -r requirements.txt
 

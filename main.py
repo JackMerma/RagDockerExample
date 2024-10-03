@@ -1,13 +1,10 @@
 import os
 from flask import Flask, request, jsonify
-from langchain_ollama import OllamaEmbeddings
-from langchain_chroma import Chroma
-from methods import *
-
+from rag.methods import *
 
 # Global variables
 app = Flask(__name__)
-OLLAMA_URL = os.getenv('OLLAMA_URL', 'http://ollama:11434')
+OLLAMA_URL = os.getenv('OLLAMA_URL')
 
 
 @app.errorhandler(Exception)
@@ -18,7 +15,7 @@ def handle_exception(error):
     return jsonify(response), 400
 
 
-@app.route('/process_prompt', methods=['POST'])
+@app.route('/rag', methods=['POST'])
 def process_prompt():
 
     ##########
@@ -49,22 +46,11 @@ def process_prompt():
     documents = get_docs(entities)
 
     # Defining the embedding model
-    embedding_model = OllamaEmbeddings(
-            model="mxbai-embed-large",
-            base_url=OLLAMA_URL
-            )
-
-    vector_store = Chroma.from_documents(
-            documents,
-            embedding_model
-            )
+    embedding_model = get_embedding_model(OLLAMA_URL)
+    vector_store = get_vector_store(documents, embedding_model)
 
     # Retrieve relevant docs
-    retriever = vector_store.as_retriever(
-            search_type="similarity_score_threshold",
-            search_kwargs={"k":ranking_number, "score_threshold": 0.1}
-            )
-
+    retriever = get_retriever(vector_store, ranking_number)
     relevant_docs = retriever.invoke(query)
     relevant_contents = get_retriever_content(relevant_docs)
 
