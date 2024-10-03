@@ -1,22 +1,25 @@
 import os
 from flask import Flask, request, jsonify
 from rag.methods import *
+from templates.methods import get_model_response
 
 # Global variables
 app = Flask(__name__)
 OLLAMA_URL = os.getenv('OLLAMA_URL')
 
 
+"""
 @app.errorhandler(Exception)
 def handle_exception(error):
     response = {
             "error": str(error)
             }
     return jsonify(response), 400
+"""
 
 
 @app.route('/rag', methods=['POST'])
-def process_prompt():
+def rag():
 
     ##########
     # INPUTS #
@@ -55,6 +58,22 @@ def process_prompt():
     relevant_contents = get_retriever_content(relevant_docs)
 
     return jsonify({"response": relevant_contents})
+
+
+@app.route('/langchain', methods=['POST'])
+def langchain():
+
+    # Getting data
+    data = request.get_json()
+    query = data.get("query", "")
+
+    # Asserting inputs
+    if not query: raise Exception("No query provided")
+
+    # Processing
+    response = get_model_response(programming_language="java", topic="arrays")
+
+    return jsonify({"response": response.content})
 
 
 if __name__ == '__main__':
