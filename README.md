@@ -1,9 +1,4 @@
-## README.md: Useful Docker Compose Commands
-
-### What is Docker Compose?
-Docker Compose is a tool for defining and running multi-container Docker applications using a YAML file. It allows you to manage multiple services in a coordinated fashion, making it easier to set up and run complex applications.
-
-### Basic Commands
+## Useful Docker Compose Commands
 
 #### `docker-compose up -d --build`
 * **Builds and runs in detached mode:**
