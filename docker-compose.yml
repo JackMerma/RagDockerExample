@@ -1,25 +1,31 @@
-version: '3.8'
-
 services:
+  server:
+    container_name: server_container
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - ollama
+    env_file:
+      - ./.env
+    volumes:
+      - .:/app
+    ports:
+      - "5000:5000"
+    command: flask run
+    restart: unless-stopped
+
   ollama:
     image: ollama/ollama
     container_name: ollama
     volumes:
       - ollama:/root/.ollama
+      - ./entrypoint.sh:/entrypoint.sh
     ports:
       - "11434:11434"
+    restart: unless-stopped
+    entrypoint: ["/usr/bin/bash", "/entrypoint.sh"]
 
-  python-app:
-    build: .
-    depends_on:
-      - ollama
-    environment:
-      - OLLAMA_URL=http://ollama:11434
-    volumes:
-      - .:/chatbot
-    ports:
-      - "5000:5000"
-    command: python main.py
 
 volumes:
   ollama:
