@@ -12,7 +12,7 @@ services:
       - .:/app
     ports:
       - "5000:5000"
-    command: flask run
+    command: python /app/src/app.py
     restart: unless-stopped
 
   ollama:
