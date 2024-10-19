@@ -6,3 +6,5 @@ langchain_community
 langchain
 
 python-dotenv
+
+flask-swagger-ui
