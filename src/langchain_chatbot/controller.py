@@ -1,13 +1,13 @@
 import os
 from langchain_community.chat_models.ollama import ChatOllama
 from langchain.prompts import ChatPromptTemplate
-from langchain_chatbot.templates import template_from_messages
+from langchain_chatbot.templates import get_messages
 
 
-def build_response(topic, additional_info, query):
+def build_response(topic, additional_info, query, history):
 
     # Building prompt
-    messages = template_from_messages(query)
+    messages = get_messages(history, query)
     prompt_template = ChatPromptTemplate.from_messages(messages)
     prompt = prompt_template.invoke({"topic": topic, "additional_info": additional_info})
     

@@ -6,7 +6,6 @@ from langchain_chatbot.controller import build_response
 # Global variables
 app = Flask(__name__)
 
-
 """
 @app.errorhandler(Exception)
 def handle_exception(error):
@@ -51,6 +50,7 @@ def langchain():
     query = data.get("query", "")
     topic = data.get("topic", "")
     additional_info = data.get("additional_info", "")
+    history = data.get("history", [])
 
     # Asserting inputs
     if not query: raise Exception("No query provided")
@@ -58,10 +58,9 @@ def langchain():
     if not additional_info: raise Exception("No additional information provided")
 
     # Processing
-    response = build_response(topic, additional_info, query)
-
+    response = build_response(topic, additional_info, query, history)
     return jsonify({"response": response.content})
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5000, debug=True)

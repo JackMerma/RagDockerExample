@@ -1,11 +1,18 @@
 import os
 
 
-def template_from_messages(query):
+def get_messages(history, query):
 
+    # Base message
     messages = [
             ("system", os.getenv('INITIAL_SYSTEM_MESSAGE')),
-            ("human", query)
             ]
+
+    # History
+    for message in history:
+        messages.append(tuple(message))
+
+    # Adding query
+    messages.append(("human", query))
 
     return messages
