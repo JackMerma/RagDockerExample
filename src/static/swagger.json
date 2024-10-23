@@ -1,0 +1,178 @@
+{
+    "swagger": "2.0",
+    "info": {
+	"description": "This is the Chatbot documentation for the RAG and LangChain solution with docker.",
+	"version": "0.1",
+	"title": "Chatbot - LangChain & RAG",
+	"contact": {
+	    "email": "jinnbit@gmail.com"
+	},
+	"license": {
+	    "name": "Apache 2.0",
+	    "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+	}
+    },
+    "host": "localhost:5000",
+    "tags": [
+	{
+	    "name": "rag",
+	    "description": "RAG service"
+	},
+	{
+	    "name": "langchain",
+	    "description": "LangChain service"
+	}
+    ],
+    "paths": {
+	"/rag": {
+	    "post": {
+		"tags": ["rag"],
+		"summary": "Consult the entities most related to a query",
+		"operationId": "getRagResults",
+		"consumes": ["application/json"],
+		"produces": ["application/json"],
+		"parameters": [
+		    {
+			"in": "body",
+			"name": "body",
+			"description": "RAG config and additional info",
+			"required": true,
+			"schema": {
+			    "$ref": "#/definitions/rag"
+			}
+		    }
+		],
+		"responses": {
+		    "200": {
+			"description": "Successful response",
+			"schema": {
+			    "type": "object",
+			    "properties": {
+				"response": {
+				    "type": "array",
+				    "items": {
+					"$ref": "#/definitions/entity"
+				    }
+				}
+			    }
+			},
+			"examples": {
+			    "application/json": {
+				"reponse": [
+				    { "content": "Dogs are friendly animals.", "id": 1 }
+				]
+			    }
+			}
+		    }
+		}
+	    }
+	},
+	"/langchain": {
+	    "post": {
+		"tags": ["langchain"],
+		"summary": "Make a query to the LLM based on the additional information given",
+		"operationId": "queryLangChain",
+		"consumes": ["application/json"],
+		"produces": ["application/json"],
+		"parameters": [
+		    {
+			"in": "body",
+			"name": "body",
+			"description": "LangChain config and additional info",
+			"required": true,
+			"schema": {
+			    "$ref": "#/definitions/langchain"
+			}
+		    }
+		],
+		"responses": {
+		    "200": {
+			"description": "Successful response",
+			"schema": {
+			    "type": "object",
+			    "properties": {
+				"response": {
+				    "type": "string",
+				    "example": "Here's more information about dogs:."
+				}
+			    }
+			}
+		    }
+		}
+	    }
+	}
+    },
+    "definitions": {
+	"rag": {
+	    "type": "object",
+	    "required": ["query", "entities", "ranking_number"],
+	    "properties": {
+		"query": {
+		    "type": "string",
+		    "example": "I want to know about dogs"
+		},
+		"entities": {
+		    "type": "array",
+		    "items": {
+			"$ref": "#/definitions/entity"
+		    }
+		},
+		"ranking_number": {
+		    "type": "integer",
+		    "example": 1
+		}
+	    }
+	},
+	"entity": {
+	    "type": "object",
+	    "properties": {
+		"id": {
+		    "type": "integer",
+		    "example": 1
+		},
+		"content": {
+		    "type": "string",
+		    "example": "Dogs are friendly animals."
+		}
+	    }
+	},
+	"langchain": {
+	    "type": "object",
+	    "required": ["query", "topic", "additional_info"],
+	    "properties": {
+		"query": {
+		    "type": "string",
+		    "example": "Give me more info about it"
+		},
+		"topic": {
+		    "type": "string",
+		    "example": "Animals"
+		},
+		"additional_info": {
+		    "type": "string",
+		    "example": "Dogs are friendly animals."
+		},
+		"history": {
+		    "type": "array",
+		    "items": {
+			"type": "array",
+			"items": [
+			    {
+				"type": "string",
+				"example": "human"
+			    },
+			    {
+				"type": "string",
+				"example": "Can you give more info about dogs?"
+			    }
+			]
+		    },
+		    "example": [
+			["human", "What are dogs?"],
+			["system", "Are friendly animals"]
+		    ]
+		}
+	    }
+	}
+    }
+}
